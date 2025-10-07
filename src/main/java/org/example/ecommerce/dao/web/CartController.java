@@ -4,6 +4,10 @@ import org.example.ecommerce.dao.entities.Cart;
 import org.example.ecommerce.dao.entities.CartItem;
 import org.example.ecommerce.dao.repository.CartRepository;
 import org.example.ecommerce.dao.repository.CartItemRepository;
+import org.example.ecommerce.dto.CartItemRequest;
+import org.example.ecommerce.service.CartService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -16,11 +20,16 @@ public class CartController {
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
 
-    public CartController(CartRepository cartRepository, CartItemRepository cartItemRepository) {
+    private final CartService cartService;
+
+    @Autowired
+    public CartController(CartRepository cartRepository,
+                          CartItemRepository cartItemRepository,
+                          CartService cartService) {
         this.cartRepository = cartRepository;
         this.cartItemRepository = cartItemRepository;
+        this.cartService = cartService;
     }
-
     // 1️⃣ Créer un panier vide
     @PostMapping
     public Cart createCart() {
@@ -55,4 +64,19 @@ public class CartController {
     public List<Cart> getAllCarts() {
         return cartRepository.findAll();
     }
+
+    @PostMapping("/{cartId}/items/bulk")
+    public Cart addMultipleItemsToCart(
+            @PathVariable Long cartId,
+            @RequestBody List<CartItemRequest> items) {
+        return cartService.addMultipleProducts(cartId, items);
+    }
+
+    @PostMapping("/{cartId}/items/multiple")
+    public ResponseEntity<Cart> addMultipleItems(@PathVariable Long cartId,
+                                                 @RequestBody List<CartItemRequest> items) {
+        return ResponseEntity.ok(cartService.addMultipleProducts(cartId, items));
+    }
+
+
 }
